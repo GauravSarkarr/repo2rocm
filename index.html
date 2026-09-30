@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Repo2ROCm — EMNLP 2026 Industry Track</title>
+  <meta name="description" content="Repo2ROCm migrates CUDA research repositories to AMD ROCm and verifies that the real workload runs on the GPU. 59 of 60 ResearchBench repositories verified. EMNLP 2026 Industry Track.">
+  <link rel="canonical" href="https://gauravsarkarr.github.io/repo2rocm/">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Repo2ROCm — EMNLP 2026 Industry Track">
+  <meta property="og:description" content="An agentic system for reproducing research code on AMD ROCm GPUs. 59/60 repositories verified, with an auditable artifact bundle for every run.">
+  <meta property="og:url" content="https://gauravsarkarr.github.io/repo2rocm/">
+  <meta property="og:image" content="https://gauravsarkarr.github.io/repo2rocm/system.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,620;1,9..144,500;1,9..144,620&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3efe6;
+      --paper-2: #e9e2d4;
+      --ink: #1c1915;
+      --ink-soft: #3c3832;
+      --muted: #5e574e;
+      --line: #d5ccbc;
+      --red: #8f2d2d;
+      --green: #1b4a38;
+      --green-bg: #e5f0ea;
+      --miss: #7a3030;
+      --miss-bg: #f6e8e4;
+      --cream: #f7f3ea;
+      --shadow: 0 18px 50px rgba(28, 25, 21, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Source Sans 3", "Source Sans Pro", sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+      overflow-x: clip;
+    }
+    img { max-width: 100%; height: auto; }
+    a { color: var(--red); }
+    a:hover { color: #6d2020; }
+    :focus-visible {
+      outline: 2px solid var(--red);
+      outline-offset: 3px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .fill { transition: none !important; }
+    }
+
+    .stripe {
+      height: 4px;
+      background: var(--red);
+    }
+    .rail {
+      display: none;
+    }
+    @media (min-width: 1100px) {
+      .rail {
+        display: flex;
+        position: fixed;
+        inset: 4px auto 0 0;
+        width: 2.6rem;
+        border-right: 1px solid var(--line);
+        align-items: center;
+        justify-content: center;
+        background: var(--paper);
+        z-index: 5;
+      }
+      .rail span {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.68rem;
+        color: var(--muted);
+      }
+      body { padding-left: 2.6rem; }
+    }
+
+    .wrap {
+      width: min(1080px, calc(100% - 2.4rem));
+      margin: 0 auto;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+      padding: 1.1rem 0 0;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .top a {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    .top a:hover { border-bottom-color: var(--ink); color: var(--ink); }
+
+    header.hero { padding: 2.4rem 0 1.6rem; }
+    .kicker {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin: 0 0 1.1rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+    .kicker i {
+      width: 0.55rem;
+      height: 0.55rem;
+      background: var(--red);
+      display: inline-block;
+      font-style: normal;
+    }
+    h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(3.3rem, 9vw, 6.4rem);
+      letter-spacing: -0.045em;
+      line-height: 0.9;
+      font-optical-sizing: auto;
+    }
+    h1 em {
+      font-style: italic;
+      font-weight: 500;
+    }
+    .dek {
+      max-width: 38rem;
+      margin: 1.15rem 0 0;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 500;
+      font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      color: var(--ink-soft);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin: 1.5rem 0 1.35rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 48px;
+      padding: 0.65rem 1rem;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.98rem;
+      letter-spacing: 0.01em;
+    }
+    .btn svg { width: 16px; height: 16px; flex: none; }
+    .btn:hover, .btn:focus-visible {
+      background: var(--ink);
+      color: var(--cream);
+    }
+    .btn.primary {
+      background: var(--ink);
+      color: var(--cream);
+    }
+    .btn.primary:hover { background: var(--red); border-color: var(--red); color: white; }
+
+    .authors { margin: 0; font-size: 1.02rem; }
+    @media (min-width: 900px) {
+      .authors span { white-space: nowrap; }
+    }
+    .authors span + span::before {
+      content: "·";
+      margin: 0 0.45rem;
+      color: var(--muted);
+    }
+    .affil, .mail {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      overflow-wrap: anywhere;
+    }
+    .mail a { color: var(--muted); }
+    code {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.88em;
+    }
+    sup { font-size: 0.7em; line-height: 0; }
+
+    .band {
+      background: var(--ink);
+      color: var(--cream);
+      margin-top: 2.6rem;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      background: transparent;
+      color: inherit;
+      margin-top: 0;
+    }
+    @media (min-width: 800px) {
+      .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .stat {
+      min-width: 0;
+      padding: 1.35rem 1.15rem 1.25rem;
+      border-top: 1px solid rgba(243, 239, 230, 0.16);
+      border-left: 1px solid rgba(243, 239, 230, 0.16);
+    }
+    .stat:nth-child(odd) { border-left: none; }
+    @media (min-width: 800px) {
+      .stat { border-top: none; }
+      .stat:nth-child(odd) { border-left: 1px solid rgba(243, 239, 230, 0.16); }
+      .stat:first-child { border-left: none; }
+    }
+    .stat b {
+      display: block;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(2rem, 4vw, 2.7rem);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .stat span {
+      display: block;
+      margin-top: 0.45rem;
+      color: #cfc6b6;
+      font-size: 0.92rem;
+      line-height: 1.35;
+    }
+
+    nav.toc {
+      display: flex;
+      gap: 1.1rem;
+      overflow-x: auto;
+      padding: 0.95rem 0;
+      border-bottom: 1px solid var(--line);
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    nav.toc a {
+      color: var(--muted);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    nav.toc a:hover { color: var(--ink); }
+
+    section { padding: 3.4rem 0; border-bottom: 1px solid var(--line); }
+    .sec-label {
+      margin: 0 0 0.8rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+    h2 {
+      margin: 0 0 1rem;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h3 {
+      margin: 0 0 0.45rem;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+    p { margin: 0 0 0.9rem; }
+    .lede { font-size: 1.12rem; color: var(--ink-soft); }
+
+    .split {
+      display: grid;
+      gap: 1.5rem;
+    }
+    @media (min-width: 860px) {
+      .split { grid-template-columns: 1.35fr 0.8fr; gap: 2.5rem; align-items: start; }
+      .split.even { grid-template-columns: 1fr 1fr; }
+    }
+    .pull {
+      margin: 0;
+      padding: 1.2rem 1.2rem 1.1rem;
+      background: var(--paper-2);
+      border-top: 3px solid var(--red);
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 500;
+      font-size: 1.28rem;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+    }
+    .pull footer {
+      margin-top: 0.8rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    figure.system { margin: 0; }
+    figure.system button {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 1px solid var(--line);
+      background: white;
+      cursor: zoom-in;
+      box-shadow: var(--shadow);
+    }
+    figure.system img { display: block; width: 100%; }
+    figcaption {
+      margin-top: 0.75rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    figcaption strong { color: var(--ink); font-weight: 700; }
+
+    dialog {
+      width: min(1200px, calc(100% - 1.5rem));
+      max-height: calc(100% - 1.5rem);
+      border: none;
+      padding: 0.6rem;
+      background: white;
+    }
+    dialog::backdrop { background: rgba(28, 25, 21, 0.72); }
+    dialog img { display: block; width: 100%; }
+    dialog form { display: flex; justify-content: flex-end; margin: 0 0 0.4rem; }
+    dialog button {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: var(--cream);
+      min-height: 36px;
+      padding: 0.3rem 0.8rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .phases { display: grid; gap: 1rem; }
+    @media (min-width: 860px) {
+      .phases { grid-template-columns: 1fr 1fr; }
+    }
+    .phase {
+      padding: 1.2rem 1.2rem 0.6rem;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.35);
+    }
+    .phase ol { margin: 0.2rem 0 0.8rem; padding-left: 1.15rem; }
+    .phase li { margin: 0.35rem 0; }
+    .tag {
+      display: inline-block;
+      margin-bottom: 0.45rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.98rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.75rem 0.7rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    tr.hl td { background: rgba(143, 45, 45, 0.06); font-weight: 700; }
+
+    .rules { margin: 1.2rem 0 0; padding: 0; list-style: none; }
+    .rules li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.8rem;
+      padding: 0.75rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .rules b {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: 1.25rem;
+      color: var(--red);
+    }
+
+    .lift {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      column-gap: clamp(0.8rem, 4vw, 2.5rem);
+      align-items: end;
+      margin: 0.4rem 0 1.5rem;
+    }
+    .lift .n b {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(2.6rem, 7vw, 4.8rem);
+      letter-spacing: -0.05em;
+      line-height: 0.85;
+    }
+    .lift .n span { font-size: 0.38em; color: var(--muted); letter-spacing: 0; }
+    .lift .end { text-align: right; }
+    .lift small { display: block; margin-top: 0.45rem; color: var(--muted); max-width: 14rem; }
+    .lift .end small { margin-left: auto; }
+    .mult {
+      align-self: center;
+      padding-bottom: 1.4rem;
+      font-family: Fraunces, Georgia, serif;
+      font-style: italic;
+      font-size: clamp(1.35rem, 3vw, 1.8rem);
+      color: var(--red);
+      white-space: nowrap;
+    }
+
+    .bars { display: grid; gap: 0.7rem; margin-top: 0.4rem; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(7.5rem, 10rem) 1fr auto;
+      gap: 0.7rem;
+      align-items: center;
+    }
+    .bar-row .name { font-weight: 600; font-size: 0.95rem; }
+    .track {
+      height: 0.7rem;
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+    }
+    .fill {
+      display: block;
+      height: 100%;
+      background: #8d8476;
+      transform-origin: left center;
+    }
+    .bar-row.us .fill { background: var(--red); }
+    .bar-row.us .name { font-weight: 700; }
+    .score {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.92rem;
+      min-width: 3rem;
+      text-align: right;
+    }
+    .formula {
+      margin: 1rem 0 0;
+      padding: 0.85rem 1rem;
+      background: white;
+      border: 1px solid var(--line);
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      overflow-x: auto;
+    }
+    .note { color: var(--muted); font-size: 0.95rem; }
+
+    .cases { display: grid; gap: 0.8rem; }
+    @media (min-width: 740px) { .cases { grid-template-columns: 1fr 1fr; } }
+    .case {
+      padding: 1rem 1rem 0.85rem;
+      border: 1px solid var(--line);
+      background: white;
+    }
+    .pill {
+      display: inline-block;
+      margin-bottom: 0.55rem;
+      padding: 0.15rem 0.45rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .pill.ok { background: var(--green-bg); color: var(--green); }
+    .pill.no { background: var(--miss-bg); color: var(--miss); }
+
+    .bundle {
+      display: grid;
+      gap: 0;
+      margin: 0;
+    }
+    @media (min-width: 740px) {
+      .bundle { grid-template-columns: 1fr 1fr; }
+    }
+    .bundle div {
+      padding: 0.9rem 0;
+      border-top: 1px solid var(--line);
+    }
+    .bundle dt {
+      font-weight: 700;
+    }
+    .bundle dd { margin: 0.15rem 0 0; color: var(--ink-soft); }
+
+    .citebox {
+      position: relative;
+      background: var(--ink);
+      color: #e7e0d4;
+      padding: 1rem 1rem 0.9rem;
+    }
+    .citebox pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .copy {
+      margin-top: 0.8rem;
+      border: 1px solid #e7e0d4;
+      background: transparent;
+      color: #e7e0d4;
+      min-height: 40px;
+      padding: 0.35rem 0.75rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .copy:hover { background: #e7e0d4; color: var(--ink); }
+
+    footer.site {
+      padding: 1.6rem 0 2rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    footer.site a { color: var(--ink-soft); }
+
+    @media (max-width: 720px) {
+      .top { letter-spacing: 0.08em; }
+      h1 { font-size: 2.7rem; }
+      .dek { font-size: 1.22rem; }
+      .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .btn { min-width: 0; padding: 0.6rem 0.3rem; font-size: 0.92rem; }
+      .bar-row { grid-template-columns: 6.5rem minmax(0, 1fr) auto; gap: 0.4rem; }
+      .bar-row .name { font-size: 0.82rem; }
+      .stat b { font-size: 1.65rem; white-space: nowrap; }
+      footer.site { padding-bottom: 2.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stripe"></div>
+  <div class="rail" aria-hidden="true"><span>EMNLP 2026 · Industry Track · Budapest</span></div>
+
+  <div class="wrap">
+    <div class="top">
+      <span>Budapest · Oct 24–29</span>
+      <a href="https://2026.emnlp.org/" target="_blank" rel="noopener">emnlp.org</a>
+    </div>
+
+    <header class="hero">
+      <p class="kicker"><i></i> EMNLP 2026 Industry Track</p>
+      <h1>Repo2<em>ROCm</em></h1>
+      <p class="dek">An agentic system for reproducing research code on AMD ROCm GPUs.</p>
+      <div class="actions">
+        <a class="btn primary" href="paper.pdf" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3.5h7.2L19 8.2V20.5H7z"/><path d="M14 3.5V8.5h5"/><path d="M9.5 13h5M9.5 16.5h5"/></svg>
+          Paper
+        </a>
+        <a class="btn" href="poster.pdf" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17"/><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5"/></svg>
+          Poster
+        </a>
+        <a class="btn" href="https://github.com/Gaurav7888/Repo2ROCm" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.7 7.7 0 018 4.77a7.7 7.7 0 012 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+      <p class="authors">
+        <span>Gaurav Sarkar<sup>1,†</sup></span>
+        <span>Umang Pandey<sup>2</sup></span>
+        <span>Pratik Prabhanjan Brahma<sup>2</sup></span>
+        <span>Zicheng Liu<sup>2</sup></span>
+        <span>Emad Barsoum<sup>2</sup></span>
+      </p>
+      <p class="affil"><sup>1</sup>IIIT Hyderabad &nbsp; <sup>2</sup>Advanced Micro Devices, Inc. &nbsp; <sup>†</sup>Work done while at AMD</p>
+      <p class="mail"><a href="mailto:gaurav.sarkar@research.iiit.ac.in">gaurav.sarkar@research.iiit.ac.in</a><br>{upandey, pprabhan, Zicheng.Liu, ebarsoum}@amd.com</p>
+    </header>
+  </div>
+
+  <div class="band">
+    <div class="wrap">
+      <div class="stats" aria-label="Headline results">
+        <div class="stat"><b>59/60</b><span>repositories verified on AMD GPUs</span></div>
+        <div class="stat"><b>3.3×</b><span>over 18/60 running out of the box</span></div>
+        <div class="stat"><b>77.3</b><span>Portability Fidelity Score, vs. 61.4 for Claude Code</span></div>
+        <div class="stat"><b>18–20 min</b><span>GitHub URL to a verified GPU run</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <nav class="toc" aria-label="On this page">
+      <a href="#abstract">Abstract</a>
+      <a href="#system">System</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#artifacts">Artifacts</a>
+      <a href="#citation">Citation</a>
+    </nav>
+
+    <section id="abstract">
+      <p class="sec-label">01 — Abstract</p>
+      <div class="split">
+        <div>
+          <p class="lede">Public ML repositories are how industry teams decide whether a method is worth adopting. Running them is rarely a clone-and-execute exercise, and it gets harder when the code assumes CUDA and the machine in front of you is an AMD GPU.</p>
+          <p>Repo2ROCm takes a repository URL and migrates that CUDA-centric codebase onto ROCm with no manual steps. It rebuilds the environment, adapts device assumptions and custom kernels, runs a real workload, and accepts success only when runtime evidence shows the workload executed on the AMD GPU. Installation, an import, or a <code>--help</code> screen is not enough.</p>
+          <p>We evaluate on ResearchBench, 60 repositories from recent ICLR, ICML, ACL, and NeurIPS papers. Eighteen run out of the box. Repo2ROCm verifies functional reproduction for 59. Against general-purpose coding agents that share the same Claude Sonnet 4 backbone, it also preserves the accelerator path more faithfully.</p>
+        </div>
+        <blockquote class="pull">
+          A repository that runs only after disabling FlashAttention, falling back to CPU, or shrinking the workload is no longer the experiment in the paper.
+          <footer>What Mode 1 refuses to count</footer>
+        </blockquote>
+      </div>
+    </section>
+
+    <section id="system">
+      <p class="sec-label">02 — System</p>
+      <h2>Plan outside Docker. Execute behind hard guards.</h2>
+      <p class="lede">A GitHub URL goes in. A verified AMD-GPU run comes out, with a Dockerfile, a source patch, command logs, verification evidence, and the full agent trajectory.</p>
+      <figure class="system">
+        <button type="button" id="open-fig" aria-haspopup="dialog" aria-controls="fig-dialog">
+          <img src="system.png" alt="Repo2ROCm system diagram. Planning phase: input a GitHub URL and optional paper, clone and fingerprint the repository, then a static planner ranks ROCm base images and writes a plan. Execution phase: a kernel agent converts CUDA to HIP, a guarded ReAct executor runs inside a Docker sandbox with hard guards, an observer sidecar, and causal memory, then a deterministic verifier checks GPU execution and, in Mode 2, paper metrics. Outputs are a Dockerfile, a unified diff, command logs, a SuccessReport, and the agent trajectory.">
+        </button>
+        <figcaption><strong>Figure 1.</strong> Planning fingerprints the repository and ranks ROCm base images. Execution is a guarded ReAct loop inside a GPU-pinned Docker sandbox. The verifier, not the language model, owns the success claim. Select the figure to enlarge it.</figcaption>
+      </figure>
+      <dialog id="fig-dialog" aria-label="System diagram, enlarged">
+        <form method="dialog"><button>Close</button></form>
+        <img src="system.png" alt="">
+      </dialog>
+    </section>
+
+    <section id="method">
+      <p class="sec-label">03 — Method</p>
+      <h2>Evidence-gated migration, in three modes.</h2>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>What it asks</th>
+              <th class="num">Outcome</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mode 0</td>
+              <td>Clone and follow the repository’s own instructions. No agent.</td>
+              <td class="num">18/60</td>
+            </tr>
+            <tr class="hl">
+              <td>Mode 1</td>
+              <td>Functional reproduction. Real workload, on the AMD GPU, with the accelerator path intact.</td>
+              <td class="num">59/60</td>
+            </tr>
+            <tr>
+              <td>Mode 2</td>
+              <td>After Mode 1, compare measured metrics with the paper’s targets and tolerances.</td>
+              <td class="num">1 of 2 cases</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="phases" style="margin-top: 1.4rem;">
+        <article class="phase">
+          <span class="tag">Planning · outside Docker</span>
+          <h3>Fingerprint, then one plan.</h3>
+          <ol>
+            <li>Clone the repository and detect frameworks, dependency files, entry points, CUDA packages, and custom <code>.cu</code> kernels.</li>
+            <li>Rank candidate ROCm base images. Package overlap is a Jaccard score over normalized dependency tokens, with filters for architecture, GPU family, and images that have already failed.</li>
+            <li>Emit a single plan: install path, migration hazards, workload command, and validation checks. Mode 2 also records a metric and a tolerance when both are unambiguous.</li>
+          </ol>
+        </article>
+        <article class="phase">
+          <span class="tag">Execution · inside the sandbox</span>
+          <h3>One action, then proof.</h3>
+          <ol>
+            <li>A ReAct executor follows the plan one action at a time in a GPU-pinned container. Successful milestones are checkpointed; failures roll back.</li>
+            <li>Custom CUDA extensions go through a kernel agent: CUDA-to-HIP conversion, including hipify, then a build-and-load check.</li>
+            <li>Hard guards block an image switch, an accelerator-library swap, a critical source edit, or a success claim until deterministic tools supply runtime evidence.</li>
+          </ol>
+        </article>
+      </div>
+
+      <h3 style="margin-top: 1.6rem;">A run counts only if all four hold.</h3>
+      <ol class="rules">
+        <li><b>01</b><span>An official workload finishes: inference, training, evaluation, or a forward pass.</span></li>
+        <li><b>02</b><span>Runtime evidence shows that workload ran on AMD hardware through ROCm.</span></li>
+        <li><b>03</b><span>Accelerator-critical pieces stay in place. Attention backends, custom kernels, and GPU libraries are not disabled, stubbed, or swapped for a degraded path such as SDPA in place of FlashAttention.</span></li>
+        <li><b>04</b><span>No unreported CPU fallback, backend substitution, disabled module, or toy-scale run.</span></li>
+      </ol>
+      <p class="note" style="margin-top: 0.9rem;">The language model cannot override that verdict. An observer sidecar breaks repeated failure loops, and causal memory offers hints from earlier repositories. Distilled hints never bypass the guards.</p>
+    </section>
+
+    <section id="results">
+      <p class="sec-label">04 — Results</p>
+      <h2>ResearchBench, on eight MI350X GPUs.</h2>
+      <div class="lift" aria-label="Out of the box 18 of 60, Repo2ROCm 59 of 60, a 3.3 times improvement">
+        <div class="n"><b>18<span>/60</span></b><small>Mode 0, out of the box</small></div>
+        <div class="mult">3.3×</div>
+        <div class="n end"><b>59<span>/60</span></b><small>Mode 1, Repo2ROCm</small></div>
+      </div>
+      <p>The misses out of the box are the usual research-code failures plus ROCm-specific ones: CUDA-only dependencies, the wrong container, hard-coded CUDA checks, silent CPU fallback, stale APIs, and small source bugs. The single Mode 1 miss, DiffusionVeteran, also fails out of the box. It is not a regression from a working baseline.</p>
+      <p class="note">Host: eight AMD Instinct MI350X GPUs (gfx950, 270.6 GB HBM3E), ROCm Runtime 1.18. Backbone: Claude Sonnet 4, capped at 100 turns. A typical run uses about 719K tokens (median 608K) and 18–20 minutes. Repeating three repositories five times each, all 15 of 15 runs matched the original verification outcome.</p>
+
+      <h3 style="margin-top: 2rem;">Same model. Higher fidelity.</h3>
+      <p>Binary “it ran” is too coarse. Agents often get a green run by replacing FlashAttention with SDPA, disabling a GPU module, or shrinking the workload. The Portability Fidelity Score charges for that. On a ten-repository diagnostic set chosen before any scores were known, every agent used Claude Sonnet 4, the same revision, hardware, budget, and public ROCm docs.</p>
+      <div class="bars" aria-label="Average Portability Fidelity Score">
+        <div class="bar-row us"><span class="name">Repo2ROCm</span><span class="track"><span class="fill" style="width:77.3%"></span></span><span class="score">77.3</span></div>
+        <div class="bar-row"><span class="name">Claude Code</span><span class="track"><span class="fill" style="width:61.4%"></span></span><span class="score">61.4</span></div>
+        <div class="bar-row"><span class="name">Mini-SWE-Agent</span><span class="track"><span class="fill" style="width:58.7%"></span></span><span class="score">58.7</span></div>
+        <div class="bar-row"><span class="name">Cursor Agent</span><span class="track"><span class="fill" style="width:40.3%"></span></span><span class="score">40.3</span></div>
+      </div>
+      <p class="formula">PFS = Ran × (15 + 35 F<sub>path</sub> + 20 A<sub>work</sub> + 20 A<sub>env</sub> + 10 D<sub>proc</sub>)</p>
+      <p class="note">Ran is 1 only when the run produced runnable evidence. Path fidelity grades each accelerator-critical component as preserved, degraded, or disabled. The ordering holds under equal component weights and when any single component is removed. This comparison is diagnostic, not a score over all 60 repositories.</p>
+
+      <h3 style="margin-top: 2rem;">Mode 2 is a case study, not the main claim.</h3>
+      <div class="cases">
+        <article class="case">
+          <span class="pill ok">Paper result reproduced</span>
+          <h3>TurboQuant</h3>
+          <p>After a verified ROCm environment, the quantization command’s compression, similarity, and match rate all landed inside the stated tolerance.</p>
+        </article>
+        <article class="case">
+          <span class="pill no">Not reproduced</span>
+          <h3>dKV-Cache</h3>
+          <p>Mode 1 succeeded: the intended workload ran on AMD GPUs. The reported hardware-sensitive speedup did not fall within tolerance, so Mode 2 refused the claim.</p>
+        </article>
+      </div>
+      <p class="note" style="margin-top: 0.8rem;">One of two preliminary cases matched. Missing datasets, gated checkpoints, and incomplete evaluation scripts still block result-level checks even when the code runs. Causal memory, ablated on 20 GPU-dependent repositories, moved the functional-run rate from 15/20 to 18/20 and gave a 1.16× speedup on repositories both settings finished.</p>
+    </section>
+
+    <section id="artifacts">
+      <p class="sec-label">05 — What every run ships</p>
+      <h2>An audit bundle, not a chat log.</h2>
+      <dl class="bundle">
+        <div><dt>Dockerfile</dt><dd>The ROCm environment the planner selected and the executor built.</dd></div>
+        <div><dt>Unified diff</dt><dd>Source changes against the original repository, including kernel ports.</dd></div>
+        <div><dt>Command logs</dt><dd>What ran inside the sandbox and what ran outside it.</dd></div>
+        <div><dt>Verification</dt><dd><code>ROCM_ENV_VERIFIED</code>, or a Mode 2 metric report with a match or a mismatch.</dd></div>
+        <div><dt>Plan and trajectory</dt><dd>The static plan and the step-by-step agent trace used for audit and distillation.</dd></div>
+        <div><dt>Code</dt><dd>System, benchmark artifacts, and reproduction instructions on GitHub.</dd></div>
+      </dl>
+      <p style="margin-top: 1.1rem;"><a href="https://github.com/Gaurav7888/Repo2ROCm">github.com/Gaurav7888/Repo2ROCm</a></p>
+    </section>
+
+    <section id="citation">
+      <p class="sec-label">06 — Citation</p>
+      <h2>Cite the paper.</h2>
+      <div class="citebox">
+        <pre id="bibtex">@inproceedings{sarkar2026repo2rocm,
+  title     = {Repo2{ROCm}: An Agentic System for Reproducing Research Code on {AMD} {ROCm} {GPU}s},
+  author    = {Sarkar, Gaurav and Pandey, Umang and Brahma, Pratik Prabhanjan and Liu, Zicheng and Barsoum, Emad},
+  booktitle = {Proceedings of the 2026 Conference on Empirical Methods in Natural Language Processing: Industry Track},
+  year      = {2026},
+  address   = {Budapest, Hungary}
+}</pre>
+        <button class="copy" type="button" id="copy-bib">Copy BibTeX</button>
+      </div>
+    </section>
+
+    <footer class="site">
+      <p>Repo2ROCm · EMNLP 2026 Industry Track · Budapest, October 24–29.<br>
+      <a href="https://gauravsarkarr.github.io/repo2rocm/">gauravsarkarr.github.io/repo2rocm</a><br>
+      <a href="paper.pdf">Paper</a> · <a href="poster.pdf">Poster</a> · <a href="https://github.com/Gaurav7888/Repo2ROCm">Code</a> · <a href="https://2026.emnlp.org/">EMNLP 2026</a></p>
+    </footer>
+  </div>
+
+  <script>
+    var openBtn = document.getElementById("open-fig");
+    var dialog = document.getElementById("fig-dialog");
+    openBtn.addEventListener("click", function () { dialog.showModal(); });
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog) dialog.close();
+    });
+    document.getElementById("copy-bib").addEventListener("click", function () {
+      var button = this;
+      var text = document.getElementById("bibtex").innerText;
+      navigator.clipboard.writeText(text).then(function () {
+        button.textContent = "Copied";
+        setTimeout(function () { button.textContent = "Copy BibTeX"; }, 1600);
+      });
+    });
+  </script>
+</body>
+</html>
