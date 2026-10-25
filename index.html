@@ -562,8 +562,9 @@
       .top { letter-spacing: 0.08em; }
       h1 { font-size: 2.7rem; }
       .dek { font-size: 1.22rem; }
-      .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .btn { min-width: 0; padding: 0.6rem 0.3rem; font-size: 0.92rem; }
+      .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .btn { min-width: 0; padding: 0.6rem 0.55rem; font-size: 0.92rem; }
+      .actions .btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
       .bar-row { grid-template-columns: 6.5rem minmax(0, 1fr) auto; gap: 0.4rem; }
       .bar-row .name { font-size: 0.82rem; }
       .stat b { font-size: 1.65rem; white-space: nowrap; }
@@ -590,15 +591,23 @@
       <div class="actions">
         <a class="btn primary" href="paper.pdf" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3.5h7.2L19 8.2V20.5H7z"/><path d="M14 3.5V8.5h5"/><path d="M9.5 13h5M9.5 16.5h5"/></svg>
-          Paper
+          Paper v1
+        </a>
+        <a class="btn" href="arXiv_Repo2Reproduce.pdf" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3.5h7.2L19 8.2V20.5H7z"/><path d="M14 3.5V8.5h5"/><path d="M9.5 13h5M9.5 16.5h5"/></svg>
+          Paper v2
+        </a>
+        <a class="btn" href="https://github.com/Gaurav7888/Repo2ROCm" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.7 7.7 0 018 4.77a7.7 7.7 0 012 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub v1
+        </a>
+        <a class="btn" href="https://github.com/AMD-AGI/Repo2Reproduce" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.7 7.7 0 018 4.77a7.7 7.7 0 012 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub v2
         </a>
         <a class="btn" href="poster.pdf" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17"/><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4.5"/></svg>
           Poster
-        </a>
-        <a class="btn" href="https://github.com/Gaurav7888/Repo2ROCm" target="_blank" rel="noopener">
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.7 7.7 0 018 4.77a7.7 7.7 0 012 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
         </a>
       </div>
       <p class="authors">
@@ -777,7 +786,7 @@
         <div><dt>Plan and trajectory</dt><dd>The static plan and the step-by-step agent trace used for audit and distillation.</dd></div>
         <div><dt>Code</dt><dd>System, benchmark artifacts, and reproduction instructions on GitHub.</dd></div>
       </dl>
-      <p style="margin-top: 1.1rem;"><a href="https://github.com/Gaurav7888/Repo2ROCm">github.com/Gaurav7888/Repo2ROCm</a></p>
+      <p style="margin-top: 1.1rem;"><a href="https://github.com/Gaurav7888/Repo2ROCm">GitHub v1</a> · <a href="https://github.com/AMD-AGI/Repo2Reproduce">GitHub v2</a></p>
     </section>
 
     <section id="citation">
@@ -798,7 +807,7 @@
     <footer class="site">
       <p>Repo2ROCm · EMNLP 2026 Industry Track · Budapest, October 24–29.<br>
       <a href="https://gauravsarkarr.github.io/repo2rocm/">gauravsarkarr.github.io/repo2rocm</a><br>
-      <a href="paper.pdf">Paper</a> · <a href="poster.pdf">Poster</a> · <a href="https://github.com/Gaurav7888/Repo2ROCm">Code</a> · <a href="https://2026.emnlp.org/">EMNLP 2026</a></p>
+      <a href="paper.pdf">Paper v1</a> · <a href="arXiv_Repo2Reproduce.pdf">Paper v2</a> · <a href="poster.pdf">Poster</a> · <a href="https://github.com/Gaurav7888/Repo2ROCm">GitHub v1</a> · <a href="https://github.com/AMD-AGI/Repo2Reproduce">GitHub v2</a> · <a href="https://2026.emnlp.org/">EMNLP 2026</a></p>
     </footer>
   </div>
 
