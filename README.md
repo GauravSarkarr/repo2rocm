@@ -1,11 +1,6 @@
-# Repo2ROCm project page
+# Repo2R
 
-Single-page site for **Repo2ROCm**, an EMNLP 2026 Industry Track paper.
+Project pages for **Repo2R**.
 
-Live site: https://gauravsarkarr.github.io/repo2rocm/
-
-- [Paper v1](paper.pdf)
-- [Paper v2](arXiv_Repo2Reproduce.pdf)
-- [Poster](poster.pdf)
-- [GitHub v1](https://github.com/Gaurav7888/Repo2ROCm)
-- [GitHub v2](https://github.com/AMD-AGI/Repo2Reproduce)
+- [Repo2ROCm](repo2rocm.html) — accepted at EMNLP 2026, Industry Track. [Paper](paper.pdf) · [Poster](poster.pdf) · [GitHub](https://github.com/Gaurav7888/Repo2ROCm)
+- [Repo2Reproduce](repo2reproduce.html) — new work, not yet published. [Paper](arXiv_Repo2Reproduce.pdf) · [GitHub](https://github.com/AMD-AGI/Repo2Reproduce)

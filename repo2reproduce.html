@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Repo2Reproduce</title>
+  <meta name="description" content="Repo2Reproduce reproduces a published machine-learning result on AMD Instinct GPUs. On a 20-paper benchmark it matches 85% of claims, up from 70%, with no incomplete runs. New work, not yet published.">
+  <link rel="canonical" href="https://gauravsarkarr.github.io/repo2rocm/repo2reproduce.html">
+  <meta property="og:title" content="Repo2Reproduce">
+  <meta property="og:description" content="Skill-guided reproduction of research results on AMD ROCm. 85% claim-level match on a 20-paper benchmark.">
+  <meta property="og:url" content="https://gauravsarkarr.github.io/repo2rocm/repo2reproduce.html">
+  <meta property="og:image" content="https://gauravsarkarr.github.io/repo2rocm/repo2reproduce-system.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,620;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3efe6;
+      --paper-2: #e9e2d4;
+      --ink: #1c1915;
+      --ink-soft: #3c3832;
+      --muted: #5e574e;
+      --line: #d5ccbc;
+      --red: #8f2d2d;
+      --cream: #f7f3ea;
+      --shadow: 0 18px 50px rgba(28, 25, 21, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Source Sans 3", "Source Sans Pro", sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+      overflow-x: clip;
+    }
+    img { max-width: 100%; height: auto; }
+    a { color: var(--red); }
+    a:hover { color: #6d2020; }
+    :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    .stripe { height: 4px; background: var(--red); }
+    .rail { display: none; }
+    @media (min-width: 1100px) {
+      .rail {
+        display: flex;
+        position: fixed;
+        inset: 4px auto 0 0;
+        width: 2.6rem;
+        border-right: 1px solid var(--line);
+        align-items: center;
+        justify-content: center;
+        background: var(--paper);
+        z-index: 5;
+      }
+      .rail span {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.68rem;
+        color: var(--muted);
+      }
+      body { padding-left: 2.6rem; }
+    }
+    .wrap { width: min(1080px, calc(100% - 2.4rem)); margin: 0 auto; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+      padding: 1.1rem 0 0;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .top a { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; }
+    .top a:hover { border-bottom-color: var(--ink); color: var(--ink); }
+    .top { align-items: center; }
+    .top-end { display: flex; align-items: center; gap: 0.95rem; }
+    a.amd { display: inline-flex; line-height: 0; border-bottom: none; }
+    a.amd:hover { border-bottom: none; }
+    a.amd img { height: 22px; width: auto; display: block; }
+    header.hero { padding: 2.4rem 0 1.6rem; }
+    .kicker {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.7rem;
+      margin: 0 0 1.1rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .shine {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      padding: 0.28rem 0.62rem;
+      border-radius: 999px;
+      background: linear-gradient(100deg, #b8882d 0%, #f8e7a8 22%, #fffaf0 42%, #e7c56a 58%, #fff6d2 74%, #a97822 100%);
+      background-size: 220% 100%;
+      color: #1c1915;
+      letter-spacing: 0.18em;
+      box-shadow: 0 0 0 1px rgba(122, 84, 18, 0.45), 0 6px 18px rgba(184, 136, 45, 0.28);
+      animation: gold 4.8s ease-in-out infinite;
+    }
+    .shine::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.9) 48%, transparent 66%);
+      transform: translateX(-130%);
+      animation: sweep 2.8s ease-in-out infinite;
+    }
+    @keyframes gold {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    @keyframes sweep {
+      0%, 18% { transform: translateX(-130%); }
+      62%, 100% { transform: translateX(130%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .shine, .shine::after { animation: none; }
+    }
+    h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(3.1rem, 8vw, 5.8rem);
+      letter-spacing: -0.045em;
+      line-height: 0.9;
+    }
+    h1 em { font-style: italic; font-weight: 500; }
+    .dek {
+      max-width: 40rem;
+      margin: 1.15rem 0 0;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 500;
+      font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      color: var(--ink-soft);
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 1.5rem 0 1.35rem; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 48px;
+      padding: 0.65rem 1rem;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .btn svg { width: 16px; height: 16px; flex: none; }
+    .btn:hover, .btn:focus-visible { background: var(--ink); color: var(--cream); }
+    .btn.primary { background: var(--ink); color: var(--cream); }
+    .btn.primary:hover { background: var(--red); border-color: var(--red); color: white; }
+    .authors { margin: 0; font-size: 1.02rem; }
+    @media (min-width: 900px) { .authors span { white-space: nowrap; } }
+    .authors span + span::before { content: "·"; margin: 0 0.45rem; color: var(--muted); }
+    .affil { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.92rem; }
+    sup { font-size: 0.7em; line-height: 0; }
+    .band { background: var(--ink); color: var(--cream); margin-top: 2.2rem; }
+    .stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    @media (min-width: 800px) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    .stat { min-width: 0; padding: 1.35rem 1.15rem 1.25rem; border-top: 1px solid rgba(243, 239, 230, 0.16); border-left: 1px solid rgba(243, 239, 230, 0.16); }
+    .stat:nth-child(odd) { border-left: none; }
+    @media (min-width: 800px) {
+      .stat { border-top: none; }
+      .stat:nth-child(odd) { border-left: 1px solid rgba(243, 239, 230, 0.16); }
+      .stat:first-child { border-left: none; }
+    }
+    .stat b {
+      display: block;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(2rem, 4vw, 2.7rem);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .stat span { display: block; margin-top: 0.45rem; color: #cfc6b6; font-size: 0.92rem; line-height: 1.35; }
+    section { padding: 3.2rem 0; border-bottom: 1px solid var(--line); }
+    .sec-label {
+      margin: 0 0 0.8rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+    h2 {
+      margin: 0 0 1rem;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    h3 {
+      margin: 0 0 0.4rem;
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: 1.28rem;
+      letter-spacing: -0.02em;
+    }
+    p { margin: 0 0 0.9rem; }
+    .lede { font-size: 1.12rem; color: var(--ink-soft); }
+    .split { display: grid; gap: 1.5rem; }
+    @media (min-width: 860px) {
+      .split { grid-template-columns: 1.35fr 0.8fr; gap: 2.5rem; align-items: start; }
+    }
+    .pull {
+      margin: 0;
+      padding: 1.2rem 1.2rem 1.1rem;
+      background: var(--paper-2);
+      border-top: 3px solid var(--red);
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 500;
+      font-size: 1.28rem;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+    }
+    .pull footer {
+      margin-top: 0.8rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    figure.system { margin: 0; }
+    figure.system button {
+      display: block;
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid var(--line);
+      background: white;
+      cursor: zoom-in;
+      box-shadow: var(--shadow);
+    }
+    figure.system img { display: block; width: 100%; }
+    figcaption { margin-top: 0.75rem; color: var(--muted); font-size: 0.92rem; }
+    figcaption strong { color: var(--ink); font-weight: 700; }
+    dialog {
+      width: min(1200px, calc(100% - 1.5rem));
+      max-height: calc(100% - 1.5rem);
+      border: none;
+      padding: 0.6rem;
+      background: white;
+    }
+    dialog::backdrop { background: rgba(28, 25, 21, 0.72); }
+    dialog img { display: block; width: 100%; }
+    dialog form { display: flex; justify-content: flex-end; margin: 0 0 0.4rem; }
+    dialog button {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: var(--cream);
+      min-height: 36px;
+      padding: 0.3rem 0.8rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .skills { display: grid; gap: 0.8rem; margin-top: 1.3rem; }
+    @media (min-width: 800px) { .skills { grid-template-columns: repeat(3, 1fr); } }
+    .skill { padding: 1rem 1rem 0.4rem; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.35); }
+    .skill .tag {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+    .lift {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
+      column-gap: clamp(0.6rem, 3vw, 2rem);
+      align-items: start;
+      margin: 0.2rem 0 1.3rem;
+    }
+    .lift .n b {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 560;
+      font-size: clamp(2.6rem, 7vw, 4.6rem);
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+    }
+    .lift .n span {
+      display: inline-block;
+      position: relative;
+      top: -0.72em;
+      margin-left: 0.04em;
+      font-size: 0.5em;
+      font-weight: 500;
+      font-style: normal;
+      letter-spacing: 0;
+      line-height: 1;
+      color: inherit;
+    }
+    .lift .mid { text-align: center; }
+    .lift .mid b { font-style: italic; color: var(--red); letter-spacing: -0.04em; }
+    .lift .end { text-align: right; }
+    .lift small { display: block; margin-top: 0.55rem; color: var(--muted); }
+    .lift .mid small { margin-left: auto; margin-right: auto; }
+    .lift .end small { margin-left: auto; }
+    .note { color: var(--muted); font-size: 0.95rem; }
+    .citebox { position: relative; background: var(--ink); color: #e7e0d4; padding: 1rem 1rem 0.9rem; }
+    .citebox pre { margin: 0; white-space: pre-wrap; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.82rem; line-height: 1.5; }
+    .copy { margin-top: 0.8rem; border: 1px solid #e7e0d4; background: transparent; color: #e7e0d4; min-height: 40px; padding: 0.35rem 0.75rem; font: inherit; font-weight: 700; cursor: pointer; }
+    .copy:hover { background: #e7e0d4; color: var(--ink); }
+    code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.88em; }
+    footer.site { padding: 1.6rem 0 2.4rem; color: var(--muted); font-size: 0.92rem; }
+    footer.site a { color: var(--ink-soft); }
+  </style>
+</head>
+<body>
+  <div class="stripe"></div>
+  <div class="rail" aria-hidden="true"><span>Repo2Reproduce · New work</span></div>
+  <div class="wrap">
+    <div class="top">
+      <span><a href="index.html">Repo2R</a> · <a href="repo2rocm.html">Repo2ROCm</a></span>
+      <span class="top-end">
+        <a class="amd" href="https://www.amd.com/" target="_blank" rel="noopener"><img src="amd.svg" alt="AMD"></a>
+        <span>Not yet published</span>
+      </span>
+    </div>
+    <header class="hero">
+      <p class="kicker"><span class="shine">New</span> Not yet published</p>
+      <h1>Repo2<em>Reproduce</em></h1>
+      <p class="dek">Skill-guided reproduction of a published result on AMD ROCm.</p>
+      <div class="actions">
+        <a class="btn primary" href="arXiv_Repo2Reproduce.pdf" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 3.5h7.2L19 8.2V20.5H7z"/><path d="M14 3.5V8.5h5"/><path d="M9.5 13h5M9.5 16.5h5"/></svg>
+          Paper
+        </a>
+        <a class="btn" href="https://github.com/AMD-AGI/Repo2Reproduce" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.7 7.7 0 018 4.77a7.7 7.7 0 012 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+      <p class="authors">
+        <span>Chaitanya Manem<sup>1</sup></span>
+        <span>Pretam Ray<sup>1</sup></span>
+        <span>Gaurav Sarkar<sup>2,†</sup></span>
+        <span>Umang Pandey<sup>1</sup></span>
+        <span>Pratik Prabhanjan Brahma<sup>1</sup></span>
+        <span>Emad Barsoum<sup>1</sup></span>
+      </p>
+      <p class="affil"><sup>1</sup>Advanced Micro Devices, Inc. &nbsp; <sup>2</sup>IIIT Hyderabad</p>
+    </header>
+  </div>
+
+  <div class="band">
+    <div class="wrap">
+      <div class="stats" aria-label="Headline results">
+        <div class="stat"><b>85%</b><span>claim-level match, vs. 70% for a general-purpose agent</span></div>
+        <div class="stat"><b>17/20</b><span>paper claims matched on the benchmark core</span></div>
+        <div class="stat"><b>0</b><span>incomplete runs, down from 3</span></div>
+        <div class="stat"><b>2/2</b><span>kernel ports meet numerical parity</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section id="about">
+      <p class="sec-label">01 — What it does</p>
+      <div class="split">
+        <div>
+          <p class="lede">Running the repository is not the same as reproducing the paper. The experiment, the metric, and the scientific settings are scattered across the article, the appendix, and the code, and those sources often disagree.</p>
+          <p>Repo2Reproduce starts from the paper and its official repository. It freezes one contribution-grounded result, reconciles the settings in both directions, prepares a ROCm environment, and runs the experiment under a controller that owns completion. Success is a comparison with the exact paper target, not a clean exit.</p>
+        </div>
+        <blockquote class="pull">
+          Reproduction is recovering the experiment before it is a problem of running code.
+          <footer>Why a README command is not enough</footer>
+        </blockquote>
+      </div>
+    </section>
+
+    <section id="system">
+      <p class="sec-label">02 — System</p>
+      <h2>Freeze the claim. Then run it.</h2>
+      <p class="lede">A paper and a repository URL go in. A target contract, a configuration audit, an execution package, and a verdict come out: match, miss, incomplete, or review.</p>
+      <figure class="system">
+        <button type="button" id="open-fig" aria-haspopup="dialog" aria-controls="fig-dialog">
+          <img src="repo2reproduce-system.png" alt="Repo2Reproduce architecture. Inputs are a research paper and an official GitHub repository. Six stages surround a controller: target selection writes a TargetContract; configuration reconciliation writes a ConfigurationAudit; a conditional ROCm kernel-porting agent scans CUDA, translates with HIPIFY, and checks numerical parity; environment preparation writes the manifests; a deterministic executor runs in an AMD GPU container; on failure, a repair agent may retry up to twice without changing the science. Finalization compares the result with the paper and reports match, miss, incomplete, or review.">
+        </button>
+        <figcaption><strong>Figure 1.</strong> The orchestrator advances a stage only after validated output. Repair can retry a failed run. It cannot change the frozen experiment, the metric, or the scientific settings. Select the figure to enlarge it.</figcaption>
+      </figure>
+      <div class="skills">
+        <article class="skill">
+          <span class="tag">Reconcile</span>
+          <h3>Both directions.</h3>
+          <p>Map every paper requirement into the code, and every scientific input the code consumes back to the paper. When they conflict and the code can express it, the paper value wins.</p>
+        </article>
+        <article class="skill">
+          <span class="tag">Repair</span>
+          <h3>The smallest fix.</h3>
+          <p>A failed run gets a targeted operational correction. The selected experiment, dataset, metric, and aggregation stay untouched. The retry budget is two.</p>
+        </article>
+        <article class="skill">
+          <span class="tag">Report</span>
+          <h3>The paper’s number.</h3>
+          <p>Compare the extracted result with the exact target, including a named baseline when the claim is an improvement. Near is not the same as matched.</p>
+        </article>
+      </div>
+      <p class="note" style="margin-top: 1rem;">CUDA paths use a porting ladder: an existing ROCm implementation, a portable path already in the repository, HIPIFY with repairs, then a targeted kernel rewrite. A port counts only after a numerical-parity check. Parity is not a claim about speed.</p>
+    </section>
+
+    <section id="results">
+      <p class="sec-label">03 — Results</p>
+      <h2>Repo2ReproduceBench, on one MI355X.</h2>
+      <div class="lift" aria-label="Claim-level match rises from 70 percent to 85 percent">
+        <div class="n"><b>70<span>%</span></b><small>General-purpose agent, 14 of 20</small></div>
+        <div class="n mid"><b>+15</b><small>points</small></div>
+        <div class="n end"><b>85<span>%</span></b><small>Repo2Reproduce, 17 of 20</small></div>
+      </div>
+      <p>The paired core is 20 papers from ICML, ICLR, NeurIPS, and ACL 2025, each runnable on one AMD Instinct MI355X within four hours. The baseline leaves 3 runs incomplete. Repo2Reproduce finishes every core task, so the share of runs that produce a paper-comparable result rises from 85% to 100%. A scalar match uses a 5% relative-error rule, and a claim of improvement must still beat the paper’s baseline.</p>
+      <p>On GrokFormer, accuracy landed at 88.90 against the paper’s 89.57. That is inside the 5% band, but it no longer exceeded the reported 89.23 baseline, so the system recorded a miss.</p>
+      <p class="note">The two kernel-porting tasks, NSNQuant and SageAttention, both meet their numerical-parity criteria. Performance agreement is reported separately: the papers measured NVIDIA hardware, and these runs use an MI355X.</p>
+    </section>
+
+    <section id="citation">
+      <p class="sec-label">04 — Citation</p>
+      <h2>BibTeX</h2>
+      <p class="note">Repo2Reproduce is not published and has no arXiv id yet, so this is an unpublished <code>@misc</code> entry rather than a preprint or proceedings record.</p>
+      <div class="citebox">
+        <pre id="bibtex">@misc{manem2026repo2reproduce,
+  title        = {Repo2Reproduce: Skill-Guided Reproduction of Research Results on {AMD} {ROCm}},
+  author       = {Manem, Chaitanya and Ray, Pretam and Sarkar, Gaurav and Pandey, Umang and Brahma, Pratik Prabhanjan and Barsoum, Emad},
+  year         = {2026},
+  howpublished = {Unpublished manuscript},
+  url          = {https://github.com/AMD-AGI/Repo2Reproduce}
+}</pre>
+        <button class="copy" type="button" id="copy-bib">Copy BibTeX</button>
+      </div>
+    </section>
+    <dialog id="fig-dialog" aria-label="System diagram, enlarged">
+      <form method="dialog"><button>Close</button></form>
+      <img src="repo2reproduce-system.png" alt="">
+    </dialog>
+
+    <footer class="site">
+      <p>Repo2Reproduce · new work, not yet published.<br>
+      <a href="index.html">Repo2R</a> · <a href="repo2rocm.html">Repo2ROCm</a><br>
+      <a href="arXiv_Repo2Reproduce.pdf">Paper</a> · <a href="https://github.com/AMD-AGI/Repo2Reproduce">GitHub</a></p>
+    </footer>
+  </div>
+  <script>
+    var openBtn = document.getElementById("open-fig");
+    var dialog = document.getElementById("fig-dialog");
+    openBtn.addEventListener("click", function () { dialog.showModal(); });
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog) dialog.close();
+    });
+    document.getElementById("copy-bib").addEventListener("click", function () {
+      var button = this;
+      var text = document.getElementById("bibtex").innerText;
+      navigator.clipboard.writeText(text).then(function () {
+        button.textContent = "Copied";
+        setTimeout(function () { button.textContent = "Copy BibTeX"; }, 1600);
+      });
+    });
+  </script>
+</body>
+</html>
